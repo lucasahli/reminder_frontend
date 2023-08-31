@@ -112,6 +112,18 @@ class _SignUpFormState extends State<SignUpForm> {
             },
             child: Text('Sign Up'),
           ),
+          SizedBox(height: 16.0),
+          ElevatedButton(
+            onPressed: () {
+              if (_formKey.currentState != null && _formKey.currentState!.validate()) {
+                _formKey.currentState!.save();
+                // Perform sign-in logic here
+                // Typically, you would send the data to a server or perform authentication.
+                signIn();
+              }
+            },
+            child: Text('Sign In'),
+          ),
         ],
       ),
     );
@@ -143,6 +155,41 @@ class _SignUpFormState extends State<SignUpForm> {
       } else {
         // Handle successful sign-up
         final data = result.data!['signUp'];
+        final token = data['token'];
+
+        // You can store the userId and token or perform any other necessary actions.
+        // print('User ID: $userId');
+        print('Token: $token');
+      }
+    }
+  }
+
+  Future<void> signIn() async {
+    if (_formKey.currentState != null && _formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      final MutationOptions options = MutationOptions(
+        document: gql('''
+          mutation SignIn(\$email: String!, \$password: String!) {
+            signIn(email: \$email, password: \$password) {
+              token
+            }
+          }
+        '''),
+        variables: {
+          'email': _email,
+          'password': _password,
+        },
+      );
+
+      final QueryResult result = await _client.mutate(options);
+
+      if (result.hasException) {
+        // Handle error
+        print('GraphQL Error: ${result.exception}');
+      } else {
+        // Handle successful sign-up
+        final data = result.data!['signIn'];
         final token = data['token'];
 
         // You can store the userId and token or perform any other necessary actions.
