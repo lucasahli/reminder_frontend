@@ -9,11 +9,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sign Up Page',
+      title: 'Reminder Frontend',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      darkTheme: ThemeData(
+        primarySwatch: Colors.purple,
+      ),
       home: SignUpPage(),
+      themeMode: ThemeMode.system,
     );
   }
 }
