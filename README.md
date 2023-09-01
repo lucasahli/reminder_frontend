@@ -1,6 +1,6 @@
-# reminder_frontend
+# Reminder Frontend
 
-The frontend to the ReminderBackend
+The frontend to the [reminder_backend](https://github.com/lucasahli/reminder_backend)
 
 ## Getting Started
 
