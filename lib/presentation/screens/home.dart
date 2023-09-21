@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'details.dart'; // Import the DetailsScreen
-import '../services/api_service.dart';
+// import '../services/api_service.dart';
 
 class MyHomePage extends StatefulWidget {
   @override
@@ -18,7 +18,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> fetchData() async {
     // Call an API service to fetch data
-    posts = await ApiService.fetchPosts();
+    // posts = await ApiService.fetchPosts();
   }
 
   @override

@@ -1,22 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:reminder_frontend/core/components/reminderContext/application/services/account_service.dart';
+import 'package:reminder_frontend/core/components/reminderContext/application/useCases/sign_in_use_case_handler.dart';
+import 'package:reminder_frontend/core/ports/inputPorts/sign_in_use_case.dart';
+import 'package:reminder_frontend/core/ports/outputPorts/authentication_api.dart';
+import 'package:reminder_frontend/infrastructure/api/reminderBackend/reminder_backend_api.dart';
 import 'package:reminder_frontend/reminder_theme.dart';
-import 'screens/home.dart';
-import 'screens/signup.dart'; // Import the SignUpScreen
-import 'screens/signin.dart'; // Import the SignInScreen
+import 'presentation/screens/home.dart';
+import 'presentation/screens/signup.dart'; // Import the SignUpScreen
+import 'presentation/screens/signin.dart'; // Import the SignInScreen
 
 void main() {
-  runApp(MyApp());
+  runApp(
+    /// Providers are above [MyApp] instead of inside it, so that tests
+    /// can use [MyApp] while mocking the providers
+    MultiProvider(
+      providers: [
+        // Provide the AuthenticationApi
+        Provider<AuthenticationApi>(
+          create: (_) => ReminderBackendApi(),
+        ),
+        // Provide the AccountService
+        Provider<AccountService>(
+          create: (context) {
+            final authenticationApi = context.read<AuthenticationApi>();
+            return AccountService(authenticationApi);
+          },
+        ),
+        // Provide the SignInUseCase
+        Provider<SignInUseCase>(
+          create: (context) {
+            final accountService = context.read<AccountService>();
+            return SignInUseCaseHandler(accountService);
+          },
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Reminder',
-      theme: reminderTheme,
+      // theme: reminderTheme,
       initialRoute: '/signin', // Set the initial route to the sign-in screen
       routes: {
-        '/signin': (context) => SignInScreen(), // Define the sign-in screen route
+        '/signin': (context) => SignInScreen(context.read<SignInUseCase>()), // Define the sign-in screen route
         '/signup': (context) => SignUpScreen(), // Define the sign-up screen route
         '/home': (context) => MyHomePage(), // Define the home screen route
       },
