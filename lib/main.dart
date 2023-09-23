@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reminder_frontend/core/components/reminderContext/application/services/account_service.dart';
+import 'package:reminder_frontend/core/components/reminderContext/application/services/reminder_api_service.dart';
+import 'package:reminder_frontend/core/components/reminderContext/application/useCases/get_reminders_of_current_user_use_case_handler.dart';
 import 'package:reminder_frontend/core/components/reminderContext/application/useCases/sign_in_use_case_handler.dart';
 import 'package:reminder_frontend/core/ports/inputPorts/sign_in_use_case.dart';
 import 'package:reminder_frontend/core/ports/outputPorts/authentication_api.dart';
+import 'package:reminder_frontend/core/ports/outputPorts/reminder_api.dart';
+import 'package:reminder_frontend/core/ports/outputPorts/secure_storage.dart';
 import 'package:reminder_frontend/infrastructure/api/reminderBackend/reminder_backend_api.dart';
+import 'package:reminder_frontend/infrastructure/secureStorage/flutterSecureStorage/flutter_storage.dart';
 import 'package:reminder_frontend/reminder_theme.dart';
+import 'core/ports/inputPorts/get_reminders_of_current_user_use_case.dart';
 import 'presentation/screens/home.dart';
 import 'presentation/screens/signup.dart'; // Import the SignUpScreen
 import 'presentation/screens/signin.dart'; // Import the SignInScreen
@@ -16,15 +22,38 @@ void main() {
     /// can use [MyApp] while mocking the providers
     MultiProvider(
       providers: [
+        // Provide the SecureStorage
+        Provider<SecureStorage>(
+          create: (_) => FlutterStorage(),
+        ),
         // Provide the AuthenticationApi
         Provider<AuthenticationApi>(
-          create: (_) => ReminderBackendApi(),
+          create: (context){
+            final secureStorage = context.read<SecureStorage>();
+            return ReminderBackendApi(secureStorage);
+          },
+        ),
+        // Provide the ReminderApi
+        Provider<ReminderApi>(
+          create: (context){
+            final secureStorage = context.read<SecureStorage>();
+            return ReminderBackendApi(secureStorage);
+          },
         ),
         // Provide the AccountService
         Provider<AccountService>(
           create: (context) {
             final authenticationApi = context.read<AuthenticationApi>();
-            return AccountService(authenticationApi);
+            final secureStorage = context.read<SecureStorage>();
+            return AccountService(authenticationApi, secureStorage);
+          },
+        ),
+        // Provide the ReminderApiService
+        Provider<ReminderApiService>(
+          create: (context) {
+            final reminderApi = context.read<ReminderApi>();
+            final secureStorage = context.read<SecureStorage>();
+            return ReminderApiService(reminderApi, secureStorage);
           },
         ),
         // Provide the SignInUseCase
@@ -32,6 +61,13 @@ void main() {
           create: (context) {
             final accountService = context.read<AccountService>();
             return SignInUseCaseHandler(accountService);
+          },
+        ),
+        // Provide the SignInUseCase
+        Provider<GetRemindersOfCurrentUserUseCase>(
+          create: (context) {
+            final reminderApiService = context.read<ReminderApiService>();
+            return GetRemindersOfCurrentUserUseCaseHandler(reminderApiService);
           },
         ),
       ],
@@ -52,7 +88,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/signin': (context) => SignInScreen(context.read<SignInUseCase>()), // Define the sign-in screen route
         '/signup': (context) => SignUpScreen(), // Define the sign-up screen route
-        '/home': (context) => MyHomePage(), // Define the home screen route
+        '/home': (context) => MyHomePage(context.read<GetRemindersOfCurrentUserUseCase>()), // Define the home screen route
       },
     );
   }

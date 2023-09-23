@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../core/ports/inputPorts/get_reminders_of_current_user_use_case.dart';
 import 'home.dart';
 
 
@@ -15,7 +17,7 @@ class SignUpScreen extends StatelessWidget {
             // Navigate to the home screen after sign-up
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => MyHomePage()),
+              MaterialPageRoute(builder: (context) => MyHomePage(context.read<GetRemindersOfCurrentUserUseCase>())),
             );
           },
           child: Text('Sign Up'),
