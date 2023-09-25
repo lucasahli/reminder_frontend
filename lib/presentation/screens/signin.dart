@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/ports/inputPorts/get_reminders_of_current_user_use_case.dart';
 import '../../core/ports/inputPorts/sign_in_use_case.dart';
@@ -63,10 +64,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 final success = await widget._signInUseCase.execute(email, password);
                 if (success) {
                   // Navigate to the home screen after sign-in
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => MyHomePage(context.read<GetRemindersOfCurrentUserUseCase>())),
-                  );
+                  context.go('/home');
                 } else {
                   print("Could not sign in!!!");
                 }

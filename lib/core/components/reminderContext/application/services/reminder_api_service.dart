@@ -8,10 +8,30 @@ class ReminderApiService {
 
   ReminderApiService(this._reminderApi, this._secureStorage);
 
-  Future<List<Reminder?>?> getRemindersOfCurrentUser() async {
+  Future<List<Reminder?>> getRemindersOfCurrentUser() async {
     String? token = await _secureStorage.read('BEARER_TOKEN');
     if(token != null){
+      print("No token to get reminders of current user...");
       return _reminderApi.getRemindersOfCurrentUser();
+    }
+    // final Token? token = await _reminderApi.signUp(email, password, fullName);
+    return [];
+  }
+
+  Future<Reminder?> createReminder(String title, DateTime dateTimeToRemind) async {
+    String? token = await _secureStorage.read('BEARER_TOKEN');
+    if(token != null){
+      return _reminderApi.createReminder(title, dateTimeToRemind);
+    }
+    // final Token? token = await _reminderApi.signUp(email, password, fullName);
+    return null;
+  }
+
+  Future<Reminder?> getReminderDetails(String reminderId) async {
+    String? token = await _secureStorage.read('BEARER_TOKEN');
+    if(token != null){
+      print("No token to get reminder details...");
+      return _reminderApi.getReminderDetails(reminderId);
     }
     // final Token? token = await _reminderApi.signUp(email, password, fullName);
     return null;

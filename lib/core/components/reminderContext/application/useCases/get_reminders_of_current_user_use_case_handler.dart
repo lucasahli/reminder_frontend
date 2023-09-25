@@ -8,8 +8,8 @@ class GetRemindersOfCurrentUserUseCaseHandler implements GetRemindersOfCurrentUs
   ReminderApiService _reminderApiService;
   GetRemindersOfCurrentUserUseCaseHandler(this._reminderApiService);
 
-  Future<List<Reminder?>?> execute(){
-    // TODO: Implement GetRemindersOfCurrentUserUseCaseHandler
+  @override
+  Future<List<Reminder?>> execute(){
     return _reminderApiService.getRemindersOfCurrentUser();
   }
 }

@@ -4,6 +4,7 @@ import 'package:reminder_frontend/core/components/reminderContext/domain/entitie
 import 'package:reminder_frontend/core/ports/outputPorts/authentication_api.dart';
 import 'package:reminder_frontend/core/ports/outputPorts/secure_storage.dart';
 
+import '../../../core/components/reminderContext/domain/entities/user.dart';
 import '../../../core/ports/outputPorts/reminder_api.dart';
 import 'graphql_exception.dart';
 import 'package:http/http.dart' as http;
@@ -52,7 +53,7 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
         // You can also access specific error information like result.exception.graphqlErrors
       } else {
         // Handle successful sign-up
-        final data = result.data!['signIn'];
+        final data = result.data?['signIn'];
         final token = Token(data['token']);
         return token;
       }
@@ -111,7 +112,7 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
   }
 
   @override
-  Future<List<Reminder?>?> getRemindersByOwnerId(String ownerId) async {
+  Future<List<Reminder?>> getRemindersByOwnerId(String ownerId) async {
     const String getRemindersByOwnerIdQuery = r'''
   query RemindersByOwner($ownerId: String!) {
     remindersByOwner(ownerId: $ownerId) {
@@ -138,8 +139,11 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
         throw GraphQLException(result.exception.toString());
         // You can also access specific error information like result.exception.graphqlErrors
       } else {
-        final List<dynamic> remindersData = result.data?['remindersByOwner'];
-        List<Reminder> reminders = [];
+        final List<dynamic>? remindersData = result.data?['remindersByOwner'];
+        if(remindersData == null){
+          return [];
+        }
+        List<Reminder?> reminders = [];
         for (final reminderData in remindersData) {
           print('Title: ${reminderData['title']}');
           print('Date Time to Remind: ${reminderData['dateTimeToRemind']}');
@@ -153,19 +157,17 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
     } catch (error) {
       if (error is GraphQLException) {
         // Handle custom GraphQL exceptions
-        return null;
+        return [];
       } else {
         // Handle network errors or other exceptions
         print('An error occurred: $error');
-        return null;
+        return [];
       }
     }
   }
 
   @override
-  Future<List<Reminder?>?> getRemindersOfCurrentUser() async {
-    // TODO: implement getRemindersOfCurrentUser
-
+  Future<List<Reminder?>> getRemindersOfCurrentUser() async {
     const String getRemindersByOwnerIdQuery = r'''
   query MyReminders {
     myReminders {
@@ -189,14 +191,12 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
         throw GraphQLException(result.exception.toString());
         // You can also access specific error information like result.exception.graphqlErrors
       } else {
-        final List<dynamic> remindersData = result.data?['myReminders'];
-        List<Reminder> reminders = [];
+        final List<dynamic>? remindersData = result.data?['myReminders'];
+        if(remindersData == null){
+          return [];
+        }
+        List<Reminder?> reminders = [];
         for (final reminderData in remindersData) {
-          print('Title: ${reminderData['title']}');
-          print('Date Time to Remind: ${reminderData['dateTimeToRemind']}');
-          print('ID: ${reminderData['id']}');
-          print('Is Completed: ${reminderData['isCompleted']}');
-          print('---');
           reminders.add(Reminder(id: reminderData['id'], title: reminderData['title'], isCompleted: reminderData['isCompleted'], dateTimeToRemind: DateTime.parse(reminderData['dateTimeToRemind'])));
         }
         return reminders;
@@ -204,6 +204,111 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
     } catch (error) {
       if (error is GraphQLException) {
         // Handle custom GraphQL exceptions
+        return [];
+      } else {
+        // Handle network errors or other exceptions
+        print('An error occurred: $error');
+        return [];
+      }
+    }
+  }
+
+  @override
+  Future<Reminder?> createReminder(String title, DateTime dateTimeToRemind) async {
+    String dateTimeIso = dateTimeToRemind.toIso8601String();
+    const String getRemindersByOwnerIdQuery = '''
+  mutation CreateReminder(\$title: String!, \$dateTimeToRemind: DateTime!) {
+    createReminder(title: \$title, dateTimeToRemind: \$dateTimeToRemind) {
+        id
+        title
+        dateTimeToRemind
+        isCompleted
+    }
+}
+''';
+
+    final MutationOptions options = MutationOptions(
+      document: gql(getRemindersByOwnerIdQuery),
+      variables: {
+        'title': title,
+        'dateTimeToRemind': dateTimeIso,
+      },
+    );
+    final QueryResult result = await _graphQLClient.mutate(options);
+
+    try {
+      if (result.hasException) {
+        print('worked not');
+        // Handle GraphQL errors by throwing a custom exception
+        throw GraphQLException(result.exception.toString());
+        // You can also access specific error information like result.exception.graphqlErrors
+      } else {
+        print('worked');
+        var reminderData = result.data?['createReminder'];
+        return Reminder(id: reminderData['id'], title: reminderData['title'], isCompleted: reminderData['isCompleted'], dateTimeToRemind: DateTime.parse(reminderData['dateTimeToRemind']));
+      }
+    } catch (error) {
+      if (error is GraphQLException) {
+        // Handle custom GraphQL exceptions
+        print(error.toString());
+        return null;
+      } else {
+        // Handle network errors or other exceptions
+        print('An error occurred: $error');
+        return null;
+      }
+    }
+  }
+
+  @override
+  Future<Reminder?> getReminderDetails(String reminderId) async {
+
+    const String graphqlRequest = r'''
+  query Reminder($reminderId: ID!) {
+    reminder(id: $reminderId) {
+        id
+        title
+        dateTimeToRemind
+        owner {
+            fullName
+            id
+        }
+        usersToRemind {
+            fullName
+            id
+        }
+        isCompleted
+    }
+}
+''';
+
+    final QueryOptions options = QueryOptions(
+      document: gql(graphqlRequest),
+      variables: {
+        'reminderId': reminderId,
+      },
+    );
+    final QueryResult result = await _graphQLClient.query(options);
+
+    try {
+      if (result.hasException) {
+        print('worked not');
+        // Handle GraphQL errors by throwing a custom exception
+        throw GraphQLException(result.exception.toString());
+        // You can also access specific error information like result.exception.graphqlErrors
+      } else {
+        print('worked');
+        var reminderData = result.data?['reminder'];
+        List<User> users = [];
+        for(final user in reminderData['usersToRemind']){
+          users.add(User(id: user['id'], fullName: user['fullName']));
+        }
+        return Reminder(id: reminderData['id'], title: reminderData['title'], isCompleted: reminderData['isCompleted'], dateTimeToRemind: DateTime.parse(reminderData['dateTimeToRemind']), owner: User(id: reminderData['owner']['id'], fullName: reminderData['owner']['fullName']), usersToRemind: users);
+      }
+    } catch (error) {
+      if (error is GraphQLException) {
+        // Handle custom GraphQL exceptions
+        print(error.toString());
         return null;
       } else {
         // Handle network errors or other exceptions
