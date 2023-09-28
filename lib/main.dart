@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -22,8 +23,70 @@ import 'core/ports/inputPorts/get_reminders_of_current_user_use_case.dart';
 import 'presentation/screens/home.dart';
 import 'presentation/screens/signup.dart'; // Import the SignUpScreen
 import 'presentation/screens/signin.dart'; // Import the SignInScreen
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `initializeApp` before using other Firebase services.
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  print("Handling a background message: ${message.messageId}");
+}
+
+
+Future<void> main() async {
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+
+  print('User granted permission: ${settings.authorizationStatus}');
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('Got a message whilst in the foreground!');
+    print('Message data: ${message.data}');
+
+    if (message.notification != null) {
+      print('Message also contained a notification: ${message.notification}');
+    }
+  });
+
+  // final fcmToken = await FirebaseMessaging.instance.getToken(vapidKey: "BAgLYWstjeqORyN5BhnEyxkdAqN95JYX_TI5oKiWin0oXM7m9yrQFa7zJY4ZVKqBEGp8WSOqvyGHrxDcJmkD748");
+  final fcmToken = await FirebaseMessaging.instance.getToken();
+  print("Registrierungstoken: $fcmToken");
+
+  FirebaseMessaging.instance.onTokenRefresh
+      .listen((fcmToken) {
+    // TODO: If necessary send token to application server.
+    print("NEW Registrierungstoken: $fcmToken");
+
+    // Note: This callback is fired at each app startup and whenever a new
+    // token is generated.
+  }).onError((err) {
+    // Error getting token.
+    print("Error: $err");
+  });
+
+  await FirebaseMessaging.instance.setAutoInitEnabled(true);
+
   runApp(
     /// Providers are above [MyApp] instead of inside it, so that tests
     /// can use [MyApp] while mocking the providers
@@ -96,6 +159,8 @@ void main() {
     ),
   );
 }
+
+
 
 /// The route configuration.
 final GoRouter _router = GoRouter(
