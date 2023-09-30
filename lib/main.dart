@@ -37,17 +37,16 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Handling a background message: ${message.messageId}");
 }
 
-
 Future<void> main() async {
-
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
+  // Init everything Firebase
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await FirebaseMessaging.instance.setAutoInitEnabled(true);
 
+  // Permissions
   FirebaseMessaging messaging = FirebaseMessaging.instance;
-
   NotificationSettings settings = await messaging.requestPermission(
     alert: true,
     announcement: false,
@@ -57,9 +56,12 @@ Future<void> main() async {
     provisional: false,
     sound: true,
   );
-
   print('User granted permission: ${settings.authorizationStatus}');
 
+  // Background Message
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Foreground Message
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     print('Got a message whilst in the foreground!');
     print('Message data: ${message.data}');
@@ -73,8 +75,7 @@ Future<void> main() async {
   final fcmToken = await FirebaseMessaging.instance.getToken();
   print("Registrierungstoken: $fcmToken");
 
-  FirebaseMessaging.instance.onTokenRefresh
-      .listen((fcmToken) {
+  FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) {
     // TODO: If necessary send token to application server.
     print("NEW Registrierungstoken: $fcmToken");
 
@@ -84,8 +85,6 @@ Future<void> main() async {
     // Error getting token.
     print("Error: $err");
   });
-
-  await FirebaseMessaging.instance.setAutoInitEnabled(true);
 
   runApp(
     /// Providers are above [MyApp] instead of inside it, so that tests
@@ -98,14 +97,14 @@ Future<void> main() async {
         ),
         // Provide the AuthenticationApi
         Provider<AuthenticationApi>(
-          create: (context){
+          create: (context) {
             final secureStorage = context.read<SecureStorage>();
             return ReminderBackendApi(secureStorage);
           },
         ),
         // Provide the ReminderApi
         Provider<ReminderApi>(
-          create: (context){
+          create: (context) {
             final secureStorage = context.read<SecureStorage>();
             return ReminderBackendApi(secureStorage);
           },
@@ -160,8 +159,6 @@ Future<void> main() async {
   );
 }
 
-
-
 /// The route configuration.
 final GoRouter _router = GoRouter(
   routes: <RouteBase>[
@@ -172,21 +169,23 @@ final GoRouter _router = GoRouter(
       },
       routes: <RouteBase>[
         GoRoute(
-          path: 'home',
-          builder: (BuildContext context, GoRouterState state) {
-            return MyHomePage(context.read<GetRemindersOfCurrentUserUseCase>());
-          },
-          routes: <RouteBase>[
-            // ReminderDetailScreen
-            GoRoute(
-              path: 'reminderDetail/:reminderId',
-              name: 'reminderDetail',
-              builder: (BuildContext context, GoRouterState state) {
-                return ReminderDetailScreen(context.read<GetReminderDetailsUseCase>(), state.pathParameters['reminderId']!);
-              },
-            ),
-          ]
-        ),
+            path: 'home',
+            builder: (BuildContext context, GoRouterState state) {
+              return MyHomePage(
+                  context.read<GetRemindersOfCurrentUserUseCase>());
+            },
+            routes: <RouteBase>[
+              // ReminderDetailScreen
+              GoRoute(
+                path: 'reminderDetail/:reminderId',
+                name: 'reminderDetail',
+                builder: (BuildContext context, GoRouterState state) {
+                  return ReminderDetailScreen(
+                      context.read<GetReminderDetailsUseCase>(),
+                      state.pathParameters['reminderId']!);
+                },
+              ),
+            ]),
         //addReminder
         GoRoute(
           path: 'addReminder',
