@@ -19,8 +19,8 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
       // Specify how to get and format your bearer token.
     );
 
-    // final HttpLink httpLink = HttpLink('http://127.0.0.1:4000/graphql');
-    final HttpLink httpLink = HttpLink('http://192.168.1.13:4000/graphql');
+    final HttpLink httpLink = HttpLink('http://127.0.0.1:4000/graphql');
+    // final HttpLink httpLink = HttpLink('http://192.168.1.13:4000/graphql');
 
     final Link link = authLink.concat(httpLink);
     _graphQLClient = GraphQLClient(cache: GraphQLCache(), link: link);
@@ -30,11 +30,23 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
   Future<Token?> signIn(String email, String password) async {
     final MutationOptions options = MutationOptions(
       document: gql('''
-          mutation SignIn(\$email: String!, \$password: String!) {
-            signIn(email: \$email, password: \$password) {
-              token
+      mutation SignIn(\$email: String!, \$password: String!) {
+    signIn(email: \$email, password: \$password) {
+        __typename
+        ... on SignInSuccess {
+            token {
+                token
             }
-          }
+        }
+        ... on SignInProblem {
+            title
+            invalidInputs {
+                field
+                message
+            }
+        }
+    }
+}
         '''),
       variables: {
         'email': email,
@@ -46,13 +58,17 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
       final QueryResult result = await _graphQLClient.mutate(options);
 
       if (result.hasException) {
+        print("Failed sign in: ");
+        print(result.exception);
+
         // Handle GraphQL errors by throwing a custom exception
         throw GraphQLException(result.exception.toString());
         // You can also access specific error information like result.exception.graphqlErrors
       } else {
+        print("Successful sign in");
         // Handle successful sign-up
         final data = result.data?['signIn'];
-        final token = Token(data['token']);
+        final token = Token(data['token']['token']);
         return token;
       }
     } catch (error) {
@@ -226,10 +242,22 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
     const String getRemindersByOwnerIdQuery = '''
   mutation CreateReminder(\$title: String!, \$dateTimeToRemind: DateTime!) {
     createReminder(title: \$title, dateTimeToRemind: \$dateTimeToRemind) {
-        id
-        title
-        dateTimeToRemind
-        isCompleted
+        __typename
+        ... on CreateReminderSuccess {
+            createdReminder {
+                id
+                title
+                dateTimeToRemind
+                isCompleted
+            }
+        }
+        ... on CreateReminderProblem {
+            title
+            invalidInputs {
+                field
+                message
+            }
+        }
     }
 }
 ''';
@@ -251,7 +279,7 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
         // You can also access specific error information like result.exception.graphqlErrors
       } else {
         print('worked');
-        var reminderData = result.data?['createReminder'];
+        var reminderData = result.data?['createReminder']['createdReminder'];
         return Reminder(
             id: reminderData['id'],
             title: reminderData['title'],
