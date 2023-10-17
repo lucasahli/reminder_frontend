@@ -18,8 +18,8 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
       // Specify how to get and format your bearer token.
     );
 
-    final HttpLink httpLink = HttpLink('http://35.247.28.216:4000/graphql');
-    // final HttpLink httpLink = HttpLink('http://127.0.0.1:4000/graphql');
+    // final HttpLink httpLink = HttpLink('http://35.247.28.216:4000/graphql');
+    final HttpLink httpLink = HttpLink('http://127.0.0.1:4000/graphql');
     // final HttpLink httpLink = HttpLink('http://192.168.1.13:4000/graphql');
 
     final Link link = authLink.concat(httpLink);

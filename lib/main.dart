@@ -73,9 +73,9 @@ Future<void> main() async {
   String? fcmToken = "";
   if (DefaultFirebaseOptions.currentPlatform == DefaultFirebaseOptions.web) {
     print("WEB");
-    fcmToken = await messaging.getToken(
-        vapidKey:
-            "BAgLYWstjeqORyN5BhnEyxkdAqN95JYX_TI5oKiWin0oXM7m9yrQFa7zJY4ZVKqBEGp8WSOqvyGHrxDcJmkD748");
+    // fcmToken = await messaging.getToken(
+    //     vapidKey:
+    //         "BAgLYWstjeqORyN5BhnEyxkdAqN95JYX_TI5oKiWin0oXM7m9yrQFa7zJY4ZVKqBEGp8WSOqvyGHrxDcJmkD748");
   } else {
     print("NOT WEB");
     fcmToken = await FirebaseMessaging.instance.getToken();
