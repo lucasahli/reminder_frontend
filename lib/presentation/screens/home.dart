@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'package:reminder_frontend/core/ports/inputPorts/create_reminder_use_case.dart';
 import '../../core/components/reminderContext/domain/entities/reminder.dart';
 import '../../core/ports/inputPorts/get_reminders_of_current_user_use_case.dart';
-import 'add_reminder_screen.dart';
-import 'details.dart'; // Import the DetailsScreen
+// Import the DetailsScreen
 
 class MyHomePage extends StatefulWidget {
   final GetRemindersOfCurrentUserUseCase _getRemindersOfCurrentUserUseCase;
 
-  MyHomePage(
+  const MyHomePage(
       this._getRemindersOfCurrentUserUseCase,
       {Key? key}) : super(key: key);
 
@@ -43,7 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Reminders'),
+        title: const Text('My Reminders'),
       ),
       body: ListView.builder(
         itemCount: _reminders.length ?? 0,
@@ -90,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
             print("Could not add a reminder...");
           }
         },
-        child: Icon(Icons.add), // You can use any icon you like
+        child: const Icon(Icons.add), // You can use any icon you like
       ),
     );
   }

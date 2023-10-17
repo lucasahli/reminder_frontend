@@ -5,11 +5,13 @@ import 'home.dart';
 
 
 class SignUpScreen extends StatelessWidget {
+  const SignUpScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sign Up'),
+        title: const Text('Sign Up'),
       ),
       body: Center(
         child: ElevatedButton(
@@ -20,7 +22,7 @@ class SignUpScreen extends StatelessWidget {
               MaterialPageRoute(builder: (context) => MyHomePage(context.read<GetRemindersOfCurrentUserUseCase>())),
             );
           },
-          child: Text('Sign Up'),
+          child: const Text('Sign Up'),
         ),
       ),
     );

@@ -5,7 +5,7 @@ import '../../domain/entities/reminder.dart';
 import '../services/reminder_api_service.dart';
 
 class GetRemindersOfCurrentUserUseCaseHandler implements GetRemindersOfCurrentUserUseCase {
-  ReminderApiService _reminderApiService;
+  final ReminderApiService _reminderApiService;
   GetRemindersOfCurrentUserUseCaseHandler(this._reminderApiService);
 
   @override

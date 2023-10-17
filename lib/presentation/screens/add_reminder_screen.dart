@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:reminder_frontend/core/ports/inputPorts/create_reminder_use_case.dart';
 
 class AddReminderScreen extends StatefulWidget {
   final CreateReminderUseCase _createReminderUseCase;
 
-  AddReminderScreen(
+  const AddReminderScreen(
       this._createReminderUseCase,
       {Key? key}) : super(key: key);
 
@@ -23,16 +22,16 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Reminder'),
+        title: const Text('Add Reminder'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
             children: <Widget>[
               TextFormField(
-                decoration: InputDecoration(labelText: 'Title'),
+                decoration: const InputDecoration(labelText: 'Title'),
                 validator: (value) {
                   if (value == null) {
                     return 'Please enter a title';
@@ -44,12 +43,12 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                 },
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: 'Description'),
+                decoration: const InputDecoration(labelText: 'Description'),
                 onSaved: (value) {
                   _description = value ?? '';
                 },
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
@@ -63,12 +62,12 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                     //   description: _description,
                     // );
                     // reminders.add(reminder);
-                    DateTime _dateTimeToRemind = DateTime.utc(2030);
+                    DateTime dateTimeToRemind = DateTime.utc(2030);
                     // var result = await widget._createReminderUseCase.execute(_title, _dateTimeToRemind);
-                    context.pop(widget._createReminderUseCase.execute(_title, _dateTimeToRemind));
+                    context.pop(widget._createReminderUseCase.execute(_title, dateTimeToRemind));
                   }
                 },
-                child: Text('Save Reminder'),
+                child: const Text('Save Reminder'),
               ),
             ],
           ),

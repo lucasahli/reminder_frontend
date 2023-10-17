@@ -16,12 +16,11 @@ import 'package:reminder_frontend/infrastructure/api/reminderBackend/reminder_ba
 import 'package:reminder_frontend/infrastructure/secureStorage/flutterSecureStorage/flutter_storage.dart';
 import 'package:reminder_frontend/presentation/screens/add_reminder_screen.dart';
 import 'package:reminder_frontend/presentation/screens/reminder_detail_screen.dart';
-import 'package:reminder_frontend/reminder_theme.dart';
 import 'core/components/reminderContext/application/useCases/get_reminder_details_use_case_handler.dart';
 import 'core/ports/inputPorts/get_reminder_details_use_case.dart';
 import 'core/ports/inputPorts/get_reminders_of_current_user_use_case.dart';
 import 'presentation/screens/home.dart';
-import 'presentation/screens/signup.dart'; // Import the SignUpScreen
+// Import the SignUpScreen
 import 'presentation/screens/signin.dart'; // Import the SignInScreen
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -71,8 +70,17 @@ Future<void> main() async {
     }
   });
 
-  // final fcmToken = await FirebaseMessaging.instance.getToken(vapidKey: "BAgLYWstjeqORyN5BhnEyxkdAqN95JYX_TI5oKiWin0oXM7m9yrQFa7zJY4ZVKqBEGp8WSOqvyGHrxDcJmkD748");
-  final fcmToken = await FirebaseMessaging.instance.getToken();
+  String? fcmToken = "";
+  if (DefaultFirebaseOptions.currentPlatform == DefaultFirebaseOptions.web) {
+    print("WEB");
+    fcmToken = await messaging.getToken(
+        vapidKey:
+            "BAgLYWstjeqORyN5BhnEyxkdAqN95JYX_TI5oKiWin0oXM7m9yrQFa7zJY4ZVKqBEGp8WSOqvyGHrxDcJmkD748");
+  } else {
+    print("NOT WEB");
+    fcmToken = await FirebaseMessaging.instance.getToken();
+  }
+
   print("Registrierungstoken: $fcmToken");
 
   FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) {
@@ -83,7 +91,7 @@ Future<void> main() async {
     // token is generated.
   }).onError((err) {
     // Error getting token.
-    print("Error: $err");
+    print("FirebaseMessaging.instance.onTokenRefresh.listen --> Error: $err");
   });
 
   runApp(
@@ -205,14 +213,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Reminder',
+      theme:
+          ThemeData(useMaterial3: true, colorScheme: const ColorScheme.dark()),
       routerConfig: _router,
-      // theme: reminderTheme,
-      // initialRoute: '/signin', // Set the initial route to the sign-in screen
-      // routes: {
-      //   '/signin': (context) => SignInScreen(context.read<SignInUseCase>()), // Define the sign-in screen route
-      //   '/signup': (context) => SignUpScreen(), // Define the sign-up screen route
-      //   '/home': (context) => MyHomePage(context.read<GetRemindersOfCurrentUserUseCase>()), // Define the home screen route
-      // },
     );
   }
 }

@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 class DetailsScreen extends StatelessWidget {
   final Map<String, dynamic> post;
 
-  DetailsScreen({required this.post});
+  const DetailsScreen({super.key, required this.post});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Post Details'),
+        title: const Text('Post Details'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -18,15 +18,15 @@ class DetailsScreen extends StatelessWidget {
           children: [
             Text(
               post['title'],
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(
               post['body'],
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
           ],
         ),

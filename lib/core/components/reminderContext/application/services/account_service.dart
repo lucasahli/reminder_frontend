@@ -6,7 +6,7 @@ import '../../domain/valueObjects/user_role.dart';
 
 class AccountService {
   final AuthenticationApi _authenticationApi;
-  SecureStorage _secureStorage;
+  final SecureStorage _secureStorage;
 
   AccountService(this._authenticationApi, this._secureStorage);
 

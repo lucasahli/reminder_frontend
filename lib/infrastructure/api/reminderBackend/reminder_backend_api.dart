@@ -7,7 +7,6 @@ import 'package:reminder_frontend/core/ports/outputPorts/secure_storage.dart';
 import '../../../core/components/reminderContext/domain/entities/user.dart';
 import '../../../core/ports/outputPorts/reminder_api.dart';
 import 'graphql_exception.dart';
-import 'package:http/http.dart' as http;
 
 class ReminderBackendApi implements AuthenticationApi, ReminderApi {
   late final GraphQLClient _graphQLClient;
@@ -19,7 +18,8 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
       // Specify how to get and format your bearer token.
     );
 
-    final HttpLink httpLink = HttpLink('http://127.0.0.1:4000/graphql');
+    final HttpLink httpLink = HttpLink('http://35.247.28.216:4000/graphql');
+    // final HttpLink httpLink = HttpLink('http://127.0.0.1:4000/graphql');
     // final HttpLink httpLink = HttpLink('http://192.168.1.13:4000/graphql');
 
     final Link link = authLink.concat(httpLink);
@@ -190,6 +190,7 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
   query MyReminders {
     myReminders {
         id
+        created
         title
         isCompleted
         dateTimeToRemind
@@ -208,14 +209,15 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
         throw GraphQLException(result.exception.toString());
         // You can also access specific error information like result.exception.graphqlErrors
       } else {
-        final List<dynamic>? remindersData = result.data?['myReminders'];
-        if (remindersData == null) {
+        final List<dynamic>? myRemindersData = result.data?['myReminders'];
+        if (myRemindersData == null) {
           return [];
         }
         List<Reminder?> reminders = [];
-        for (final reminderData in remindersData) {
+        for (final reminderData in myRemindersData) {
           reminders.add(Reminder(
               id: reminderData['id'],
+              created: DateTime.parse(reminderData['created']),
               title: reminderData['title'],
               isCompleted: reminderData['isCompleted'],
               dateTimeToRemind:
@@ -330,12 +332,12 @@ class ReminderBackendApi implements AuthenticationApi, ReminderApi {
 
     try {
       if (result.hasException) {
-        print('worked not');
+        print('worked not to get ReminderDetails');
         // Handle GraphQL errors by throwing a custom exception
         throw GraphQLException(result.exception.toString());
         // You can also access specific error information like result.exception.graphqlErrors
       } else {
-        print('worked');
+        print('worked to get ReminderDetails');
         var reminderData = result.data?['reminder'];
         List<User> users = [];
         for (final user in reminderData['usersToRemind']) {

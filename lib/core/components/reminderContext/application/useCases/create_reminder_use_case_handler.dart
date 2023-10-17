@@ -4,7 +4,7 @@ import '../../domain/entities/reminder.dart';
 import '../services/reminder_api_service.dart';
 
 class CreateReminderUseCaseHandler implements CreateReminderUseCase {
-  ReminderApiService _reminderApiService;
+  final ReminderApiService _reminderApiService;
 
   CreateReminderUseCaseHandler(this._reminderApiService);
 

@@ -43,12 +43,29 @@
   <script src="main.dart.js" type="application/javascript"></script>
   <script>
     window.addEventListener('load', function(ev) {
-        navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      if ('serviceWorker' in navigator) {
+         navigator.serviceWorker.register('/firebase-messaging-sw.js')
+         .then((registration) => {
+            messaging.useServiceWorker(registration);
+            // request notification permission and get token
+            console.log('Registration successful, scope is:',
+            registration.scope);
+            //TODO: ask For Permission To Receive Notifications
+         }).catch(function(err) {
+        console.log('Service worker registration failed, error:', err);
+      });
+
+      navigator.serviceWorker.register('/firebase-messaging-sw.js').then(registration => {
+
+      registration.pushManager.subscribe({
+        // ... (subscription code)
+      });
 
        // Wait for registration to finish before dropping the <script> tag.
        // Otherwise, the browser will load the script multiple times,
        // potentially different versions.
        var serviceWorkerUrl = 'flutter_service_worker.js?v=' + serviceWorkerVersion;
+       console.log("SERVICE WORKER URL: ", serviceWorkerUrl);
       // Download main.dart.js
       _flutter.loader.loadEntrypoint({
         serviceWorker: {
@@ -60,6 +77,9 @@
           });
         }
       });
+
+      });
+
     });
   </script>
 <!--  <script>-->

@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import '../../core/ports/inputPorts/get_reminders_of_current_user_use_case.dart';
 import '../../core/ports/inputPorts/sign_in_use_case.dart';
-import 'home.dart';
 
-import 'package:flutter/material.dart';
 
 class SignInScreen extends StatefulWidget {
   final SignInUseCase _signInUseCase;
 
-  SignInScreen(this._signInUseCase, {Key? key}) : super(key: key);
+  const SignInScreen(this._signInUseCase, {Key? key}) : super(key: key);
 
   @override
   _SignInScreenState createState() => _SignInScreenState();
@@ -38,12 +34,12 @@ class _SignInScreenState extends State<SignInScreen> {
                   email = value; // Store the email input
                 });
               },
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Email',
                 hintText: 'Enter your email',
               ),
             ),
-            SizedBox(height: 16.0), // Add spacing between fields
+            const SizedBox(height: 16.0), // Add spacing between fields
             // Password input field
             TextFormField(
               onChanged: (value) {
@@ -52,12 +48,12 @@ class _SignInScreenState extends State<SignInScreen> {
                 });
               },
               obscureText: true, // Hide the password
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Password',
                 hintText: 'Enter your password',
               ),
             ),
-            SizedBox(height: 16.0), // Add spacing between fields
+            const SizedBox(height: 16.0), // Add spacing between fields
             ElevatedButton(
               onPressed: () async {
                 // Call the sign-in use case
@@ -69,7 +65,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   print("Could not sign in!!!");
                 }
               },
-              child: Text('Sign In'),
+              child: const Text('Sign In'),
             ),
           ],
         ),

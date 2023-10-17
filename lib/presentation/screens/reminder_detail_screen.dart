@@ -7,7 +7,7 @@ class ReminderDetailScreen extends StatefulWidget {
   final String reminderId; // You can pass the ID of the reminder to fetch
   final GetReminderDetailsUseCase _getReminderDetailsUseCase;
 
-  ReminderDetailScreen(this._getReminderDetailsUseCase, this.reminderId,
+  const ReminderDetailScreen(this._getReminderDetailsUseCase, this.reminderId,
       {super.key});
 
   @override
@@ -16,7 +16,7 @@ class ReminderDetailScreen extends StatefulWidget {
 
 class _ReminderDetailScreenState extends State<ReminderDetailScreen> {
   late String reminderId;
-  Reminder? _reminder = null; // This will hold the fetched reminder details
+  Reminder? _reminder; // This will hold the fetched reminder details
 
   @override
   void initState() {
@@ -46,7 +46,7 @@ class _ReminderDetailScreenState extends State<ReminderDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Reminder Details'),
+        title: const Text('Reminder Details'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -56,23 +56,23 @@ class _ReminderDetailScreenState extends State<ReminderDetailScreen> {
             if (_reminder != null)
               Text(
                 'Title: ${_reminder!.title}',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             if (_reminder != null) Text('ID: ${_reminder!.id}'),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             if (_reminder != null)
               Text('Is Completed: ${_reminder!.isCompleted ? 'Yes' : 'No'}'),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             if (_reminder != null)
               if (_reminder!.dateTimeToRemind != null)
                 Text('Date and Time to Remind: ${_reminder!.dateTimeToRemind}'),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             if (_reminder != null)
               if (_reminder!.owner != null)
                 Text(
                     'Owner: ${_reminder!.owner!.fullName}'), // Assuming 'name' is a property of the User class
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             if (_reminder != null)
               if (_reminder!.usersToRemind != null)
                 Text(
