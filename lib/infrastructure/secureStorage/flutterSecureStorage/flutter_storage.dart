@@ -4,7 +4,7 @@ import 'package:reminder_frontend/core/ports/outputPorts/secure_storage.dart';
 class FlutterStorage implements SecureStorage {
   late final FlutterSecureStorage storage;
 
-  FlutterStorage(){
+  FlutterStorage() {
     // Create storage
     storage = const FlutterSecureStorage();
   }
@@ -21,7 +21,14 @@ class FlutterStorage implements SecureStorage {
 
   @override
   Future<String?> read(String key) async {
-    return await storage.read(key: key);
+    try {
+      final String? value = await storage.read(key: key);
+      return value;
+    } catch (e) {
+      // Handle the error here
+      print('Error reading (Key: ${key}) from secure storage: $e');
+      return null;
+    }
   }
 
   @override
@@ -34,4 +41,3 @@ class FlutterStorage implements SecureStorage {
     await storage.write(key: key, value: value);
   }
 }
-

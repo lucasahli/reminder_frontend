@@ -1,6 +1,8 @@
-import '../../components/reminderContext/domain/entities/token.dart';
+import '../../components/reminderContext/domain/entities/refresh_access_result.dart';
+import '../../components/reminderContext/domain/entities/sign_in_result.dart';
 
 abstract class AuthenticationApi {
-  Future<Token?> signUp(String email, String password, String fullName);
-  Future<Token?> signIn(String email, String password);
+  Future<SignInResult?> signUp(String email, String password, String fullName);
+  Future<SignInResult> signIn(String email, String password);
+  Future<RefreshAccessResult> refreshAccess(String refreshTokenString);
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../core/components/reminderContext/domain/entities/reminder.dart';
 import '../../core/ports/inputPorts/get_reminders_of_current_user_use_case.dart';
 // Import the DetailsScreen
@@ -7,9 +8,8 @@ import '../../core/ports/inputPorts/get_reminders_of_current_user_use_case.dart'
 class MyHomePage extends StatefulWidget {
   final GetRemindersOfCurrentUserUseCase _getRemindersOfCurrentUserUseCase;
 
-  const MyHomePage(
-      this._getRemindersOfCurrentUserUseCase,
-      {Key? key}) : super(key: key);
+  const MyHomePage(this._getRemindersOfCurrentUserUseCase, {Key? key})
+      : super(key: key);
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -26,11 +26,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> fetchReminders() async {
     try {
-      final newReminders = await widget._getRemindersOfCurrentUserUseCase.execute();
+      final newReminders =
+          await widget._getRemindersOfCurrentUserUseCase.execute();
       setState(() {
         _reminders = newReminders;
       });
-      print("fetched Reminders...");
+      print("fetched Reminders with length: ${newReminders.length}");
     } catch (error) {
       print('Error fetching reminders: $error');
     }
@@ -49,12 +50,15 @@ class _MyHomePageState extends State<MyHomePage> {
           if (reminder != null) {
             return ListTile(
               title: Text(reminder.title),
-              subtitle: Text(reminder.id),
-              trailing: Text(reminder.dateTimeToRemind?.toIso8601String() ?? ''),
-              enabled: !reminder.isCompleted,
-
+              subtitle: Text(DateFormat('dd/mm/y HH:MM', 'en_US')
+                  .format(reminder.dateTimeToRemind!)),
+              trailing: Checkbox(
+                value: reminder.isCompleted,
+                onChanged: null,
+              ),
               onTap: () {
-                context.goNamed("reminderDetail", pathParameters: {'reminderId': reminder.id});
+                context.goNamed("reminderDetail",
+                    pathParameters: {'reminderId': reminder.id});
 
                 // Navigate to the Details screen when a post is tapped
                 // Navigator.push(
@@ -65,8 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 // );
               },
             );
-          }
-          else {
+          } else {
             return const SizedBox(); // Placeholder for null reminders
           }
         },
@@ -74,16 +77,16 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           print('Add Reminder...');
-          final Reminder? result = await context.push<Reminder?>('/addReminder');
-          if(result != null){
+          final Reminder? result =
+              await context.push<Reminder?>('/addReminder');
+          if (result != null) {
             _reminders.add(result);
             setState(() {
               _reminders = _reminders;
             });
             print("Added a reminder... ${result.title}");
             // fetchReminders();
-          }
-          else {
+          } else {
             print("Could not add a reminder...");
           }
         },

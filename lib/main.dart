@@ -2,7 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import 'package:reminder_frontend/core/components/reminderContext/application/services/account_service.dart';
+import 'package:reminder_frontend/core/components/reminderContext/application/services/authentication_service.dart';
 import 'package:reminder_frontend/core/components/reminderContext/application/services/reminder_api_service.dart';
 import 'package:reminder_frontend/core/components/reminderContext/application/useCases/create_reminder_use_case_handler.dart';
 import 'package:reminder_frontend/core/components/reminderContext/application/useCases/get_reminders_of_current_user_use_case_handler.dart';
@@ -16,9 +16,11 @@ import 'package:reminder_frontend/infrastructure/api/reminderBackend/reminder_ba
 import 'package:reminder_frontend/infrastructure/secureStorage/flutterSecureStorage/flutter_storage.dart';
 import 'package:reminder_frontend/presentation/screens/add_reminder_screen.dart';
 import 'package:reminder_frontend/presentation/screens/reminder_detail_screen.dart';
+import 'package:reminder_frontend/presentation/uiElements/loading_indicator.dart';
 import 'core/components/reminderContext/application/useCases/get_reminder_details_use_case_handler.dart';
 import 'core/ports/inputPorts/get_reminder_details_use_case.dart';
 import 'core/ports/inputPorts/get_reminders_of_current_user_use_case.dart';
+import 'infrastructure/api/authenticationBackend/authentication_backend_api.dart';
 import 'presentation/screens/home.dart';
 // Import the SignUpScreen
 import 'presentation/screens/signin.dart'; // Import the SignInScreen
@@ -106,38 +108,36 @@ Future<void> main() async {
         // Provide the AuthenticationApi
         Provider<AuthenticationApi>(
           create: (context) {
+            return AuthenticationBackendApi();
+          },
+        ),
+        Provider<AuthenticationService>(
+          create: (context) {
+            final authenticationApi = context.read<AuthenticationApi>();
             final secureStorage = context.read<SecureStorage>();
-            return ReminderBackendApi(secureStorage);
+            return AuthenticationService(authenticationApi, secureStorage);
           },
         ),
         // Provide the ReminderApi
         Provider<ReminderApi>(
           create: (context) {
-            final secureStorage = context.read<SecureStorage>();
-            return ReminderBackendApi(secureStorage);
-          },
-        ),
-        // Provide the AccountService
-        Provider<AccountService>(
-          create: (context) {
-            final authenticationApi = context.read<AuthenticationApi>();
-            final secureStorage = context.read<SecureStorage>();
-            return AccountService(authenticationApi, secureStorage);
+            final authenticationService = context.read<AuthenticationService>();
+            return ReminderBackendApi(authenticationService);
           },
         ),
         // Provide the ReminderApiService
         Provider<ReminderApiService>(
           create: (context) {
             final reminderApi = context.read<ReminderApi>();
-            final secureStorage = context.read<SecureStorage>();
-            return ReminderApiService(reminderApi, secureStorage);
+            final authenticationService = context.read<AuthenticationService>();
+            return ReminderApiService(reminderApi, authenticationService);
           },
         ),
         // Provide the SignInUseCase
         Provider<SignInUseCase>(
           create: (context) {
-            final accountService = context.read<AccountService>();
-            return SignInUseCaseHandler(accountService);
+            final authenticationService = context.read<AuthenticationService>();
+            return SignInUseCaseHandler(authenticationService);
           },
         ),
         // Provide the SignInUseCase
@@ -171,51 +171,118 @@ Future<void> main() async {
 final GoRouter _router = GoRouter(
   routes: <RouteBase>[
     GoRoute(
-      path: '/',
+        path: '/',
+        builder: (BuildContext context, GoRouterState state) {
+          return MyHomePage(context.read<GetRemindersOfCurrentUserUseCase>());
+        },
+        routes: <RouteBase>[
+          // ReminderDetailScreen
+          GoRoute(
+            path: 'reminderDetail/:reminderId',
+            name: 'reminderDetail',
+            builder: (BuildContext context, GoRouterState state) {
+              return ReminderDetailScreen(
+                  context.read<GetReminderDetailsUseCase>(),
+                  state.pathParameters['reminderId']!);
+            },
+          ),
+          //addReminder
+          GoRoute(
+            path: 'addReminder',
+            builder: (BuildContext context, GoRouterState state) {
+              return AddReminderScreen(context.read<CreateReminderUseCase>());
+            },
+          ),
+        ]),
+    GoRoute(
+      path: '/signIn',
       builder: (BuildContext context, GoRouterState state) {
         return SignInScreen(context.read<SignInUseCase>());
       },
-      routes: <RouteBase>[
-        GoRoute(
-            path: 'home',
-            builder: (BuildContext context, GoRouterState state) {
-              return MyHomePage(
-                  context.read<GetRemindersOfCurrentUserUseCase>());
-            },
-            routes: <RouteBase>[
-              // ReminderDetailScreen
-              GoRoute(
-                path: 'reminderDetail/:reminderId',
-                name: 'reminderDetail',
-                builder: (BuildContext context, GoRouterState state) {
-                  return ReminderDetailScreen(
-                      context.read<GetReminderDetailsUseCase>(),
-                      state.pathParameters['reminderId']!);
-                },
-              ),
-            ]),
-        //addReminder
-        GoRoute(
-          path: 'addReminder',
-          builder: (BuildContext context, GoRouterState state) {
-            return AddReminderScreen(context.read<CreateReminderUseCase>());
-          },
-        ),
-      ],
     ),
   ],
+  redirect: (context, state) async {
+    print("REDIRECT, fullPath: ${state.fullPath}");
+    final authenticationService = context.read<AuthenticationService>();
+    if (!authenticationService.isAuthenticated) {
+      print('REFRESHING...');
+      await authenticationService.getAccessToken();
+    }
+    final bool isAuthenticated = authenticationService.isAuthenticated;
+
+    // If trying to access a protected route and not authenticated, redirect to signIn
+    final bool isGoingToSignIn = state.fullPath == '/signIn';
+    if (!isAuthenticated && !isGoingToSignIn) {
+      // Redirect to the sign-in page
+      print("REDIRECT to signIn");
+      return '/signIn';
+    }
+
+    // If the user is authenticated and is going to signIn, redirect to the home page
+    if (isAuthenticated && isGoingToSignIn) {
+      // Redirect to the home page or another appropriate page
+      print("REDIRECT to /");
+      return '/';
+    }
+
+    // No redirect needed
+    print("REDIRECT not needed");
+    return null;
+  },
+  // Define an error page
+  // errorBuilder: (context, state) => ErrorScreen(error: state.error),
 );
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
+  ThemeData _buildTheme(brightness) {
+    var seedColor = const Color.fromARGB(255, 0, 0, 0);
+    var baseTheme = ThemeData(
+      brightness: brightness,
+      useMaterial3: true,
+      // colorSchemeSeed: seedColor,
+    );
+
+    return baseTheme.copyWith(
+        // textTheme: GoogleFonts.latoTextTheme(baseTheme.textTheme),
+        // textTheme: GoogleFonts.robotoTextTheme(baseTheme.textTheme),
+        );
+  }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return MaterialApp.router(
+  //     title: 'Reminder',
+  //     theme: _buildTheme(Brightness.dark),
+  //     routerConfig: _router,
+  //   );
+  // }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Reminder',
-      theme:
-          ThemeData(useMaterial3: true, colorScheme: const ColorScheme.dark()),
-      routerConfig: _router,
+    return FutureBuilder(
+      // Call loadTokens and pass the secureStorage instance
+      future: context.read<AuthenticationService>().loadTokensFromStorage(),
+      builder: (context, snapshot) {
+        // Check if the future is complete
+        if (snapshot.connectionState == ConnectionState.done) {
+          // If we have an error, we can handle it here, perhaps by showing an error message
+          if (snapshot.hasError) {
+            // return SomethingWentWrong();
+          }
+
+          // If the future completed successfully, build the rest of the UI
+          return MaterialApp.router(
+            title: 'Reminder',
+            theme: _buildTheme(Brightness.dark),
+            routerConfig: _router,
+          );
+        } else {
+          // While waiting for the future to complete, show a loading spinner
+          return LoadingIndicator();
+        }
+      },
     );
   }
 }

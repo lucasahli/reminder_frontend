@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:reminder_frontend/core/components/reminderContext/domain/entities/sign_in_result.dart';
 import '../../core/ports/inputPorts/sign_in_use_case.dart';
-
 
 class SignInScreen extends StatefulWidget {
   final SignInUseCase _signInUseCase;
@@ -13,8 +13,51 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  String email = '';
-  String password = '';
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  String? _emailError;
+  String? _passwordError;
+
+  void _signIn() async {
+    // Clear previous errors
+    setState(() {
+      _emailError = null;
+      _passwordError = null;
+    });
+    // Call the sign-in use case
+    final signInResult = await widget._signInUseCase
+        .execute(_emailController.text, _passwordController.text);
+    if (signInResult is SignInSuccess) {
+      // Navigate to the home screen after sign-in
+      if (!mounted) return;
+      // if (!context.mounted) return;
+      context.go('/');
+    } else if (signInResult is SignInProblem) {
+      for (final invalidInput in signInResult.invalidInputs) {
+        if (invalidInput.field == 'EMAIL') {
+          setState(() {
+            _emailError = invalidInput.message;
+          });
+        } else if (invalidInput.field == 'PASSWORD') {
+          setState(() {
+            _passwordError = invalidInput.message;
+          });
+        }
+      }
+    }
+    // For example, you might call a method on your authentication service
+    // print('Email: ${_emailController.text}');
+    // print('Password: ${_passwordController.text}');
+    // YourAuthService.signIn(_emailController.text, _passwordController.text);
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,50 +67,51 @@ class _SignInScreenState extends State<SignInScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Email input field
-            TextFormField(
-              onChanged: (value) {
-                setState(() {
-                  email = value; // Store the email input
-                });
-              },
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                hintText: 'Enter your email',
+        child: AutofillGroup(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Email input field
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  hintText: 'Enter your email',
+                  errorText: _emailError,
+                ),
+                keyboardType: TextInputType.emailAddress,
+                autofillHints: const [AutofillHints.email],
+                textInputAction:
+                    TextInputAction.next, // Moves focus to next input
               ),
-            ),
-            const SizedBox(height: 16.0), // Add spacing between fields
-            // Password input field
-            TextFormField(
-              onChanged: (value) {
-                setState(() {
-                  password = value; // Store the password input
-                });
-              },
-              obscureText: true, // Hide the password
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                hintText: 'Enter your password',
+
+              const SizedBox(height: 16.0), // Add spacing between fields
+              // Password input field
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  hintText: 'Enter your password',
+                  errorText: _passwordError,
+                ),
+                obscureText: true,
+                // Hide the password
+                keyboardType: TextInputType.visiblePassword,
+                autofillHints: const [AutofillHints.password],
+                textInputAction: TextInputAction.done,
+                // Indicates completion
+                onFieldSubmitted: (value) {
+                  // This is called when the user presses "Enter" on the keyboard
+                  _signIn();
+                },
               ),
-            ),
-            const SizedBox(height: 16.0), // Add spacing between fields
-            ElevatedButton(
-              onPressed: () async {
-                // Call the sign-in use case
-                final success = await widget._signInUseCase.execute(email, password);
-                if (success) {
-                  // Navigate to the home screen after sign-in
-                  context.go('/home');
-                } else {
-                  print("Could not sign in!!!");
-                }
-              },
-              child: const Text('Sign In'),
-            ),
-          ],
+              const SizedBox(height: 16.0), // Add spacing between fields
+              ElevatedButton(
+                onPressed: _signIn,
+                child: const Text('Sign In'),
+              ),
+            ],
+          ),
         ),
       ),
     );

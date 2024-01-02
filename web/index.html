@@ -41,67 +41,67 @@
 </head>
 <body>
   <script src="main.dart.js" type="application/javascript"></script>
-  <script type="module">
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "firebase/app";
-    import { getAnalytics } from "firebase/analytics";
-    import { getMessaging } from "firebase/messaging/sw";
-    import { onBackgroundMessage } from "firebase/messaging/sw";
+<!--  <script type="module">-->
+<!--    // Import the functions you need from the SDKs you need-->
+<!--    import { initializeApp } from "firebase/app";-->
+<!--    import { getAnalytics } from "firebase/analytics";-->
+<!--    import { getMessaging } from "firebase/messaging/sw";-->
+<!--    import { onBackgroundMessage } from "firebase/messaging/sw";-->
 
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
+<!--    // TODO: Add SDKs for Firebase products that you want to use-->
+<!--    // https://firebase.google.com/docs/web/setup#available-libraries-->
 
-    // Your web app's Firebase configuration
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-    const firebaseConfig = {
-      apiKey: "AIzaSyCL9YKxDrz2bfgVgn2vuDVwIjkSnljOFBs",
-      authDomain: "reminder-app-803e2.firebaseapp.com",
-      projectId: "reminder-app-803e2",
-      storageBucket: "reminder-app-803e2.appspot.com",
-      messagingSenderId: "647725682472",
-      appId: "1:647725682472:web:1777b070fa6f2d7ccc8a1d",
-      measurementId: "G-L2P2GE75CR"
-    };
+<!--    // Your web app's Firebase configuration-->
+<!--    // For Firebase JS SDK v7.20.0 and later, measurementId is optional-->
+<!--    const firebaseConfig = {-->
+<!--      apiKey: "AIzaSyCL9YKxDrz2bfgVgn2vuDVwIjkSnljOFBs",-->
+<!--      authDomain: "reminder-app-803e2.firebaseapp.com",-->
+<!--      projectId: "reminder-app-803e2",-->
+<!--      storageBucket: "reminder-app-803e2.appspot.com",-->
+<!--      messagingSenderId: "647725682472",-->
+<!--      appId: "1:647725682472:web:1777b070fa6f2d7ccc8a1d",-->
+<!--      measurementId: "G-L2P2GE75CR"-->
+<!--    };-->
 
-    // Initialize Firebase
-    const firebaseApp = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(firebaseApp);
-    const messaging = getMessaging(firebaseApp);
+<!--    // Initialize Firebase-->
+<!--    const firebaseApp = initializeApp(firebaseConfig);-->
+<!--    const analytics = getAnalytics(firebaseApp);-->
+<!--    const messaging = getMessaging(firebaseApp);-->
 
-    Notification.requestPermission().then((permission) => {
-      if (permission === 'granted') {
-        console.log('Notification permission granted.');
-        // TODO(developer): Retrieve a registration token for use with FCM.
-        getToken(messaging, { vapidKey: 'BAgLYWstjeqORyN5BhnEyxkdAqN95JYX_TI5oKiWin0oXM7m9yrQFa7zJY4ZVKqBEGp8WSOqvyGHrxDcJmkD748' }).then((currentToken) => {
-          if (currentToken) {
-            // Send the token to your server and update the UI if necessary
-            // ...
-          } else {
-            // Show permission request UI
-            console.log('No registration token available. Request permission to generate one.');
-            // ...
-          }
-        }).catch((err) => {
-          console.log('An error occurred while retrieving token. ', err);
-          // ...
-        });
-      } else {
-        console.log('Unable to get permission to notify.');
-      }
-    });
+<!--    Notification.requestPermission().then((permission) => {-->
+<!--      if (permission === 'granted') {-->
+<!--        console.log('Notification permission granted.');-->
+<!--        // TODO(developer): Retrieve a registration token for use with FCM.-->
+<!--        getToken(messaging, { vapidKey: 'BAgLYWstjeqORyN5BhnEyxkdAqN95JYX_TI5oKiWin0oXM7m9yrQFa7zJY4ZVKqBEGp8WSOqvyGHrxDcJmkD748' }).then((currentToken) => {-->
+<!--          if (currentToken) {-->
+<!--            // Send the token to your server and update the UI if necessary-->
+<!--            // ...-->
+<!--          } else {-->
+<!--            // Show permission request UI-->
+<!--            console.log('No registration token available. Request permission to generate one.');-->
+<!--            // ...-->
+<!--          }-->
+<!--        }).catch((err) => {-->
+<!--          console.log('An error occurred while retrieving token. ', err);-->
+<!--          // ...-->
+<!--        });-->
+<!--      } else {-->
+<!--        console.log('Unable to get permission to notify.');-->
+<!--      }-->
+<!--    });-->
 
-    onBackgroundMessage(messaging, (payload) => {
-      console.log('[firebase-messaging-sw.js] Received background message ', payload);
-      // Customize notification here
-      const notificationTitle = 'Background Message Title';
-      const notificationOptions = {
-        body: 'Background Message body.',
-        icon: '/firebase-logo.png'
-      };
+<!--    onBackgroundMessage(messaging, (payload) => {-->
+<!--      console.log('[firebase-messaging-sw.js] Received background message ', payload);-->
+<!--      // Customize notification here-->
+<!--      const notificationTitle = 'Background Message Title';-->
+<!--      const notificationOptions = {-->
+<!--        body: 'Background Message body.',-->
+<!--        icon: '/firebase-logo.png'-->
+<!--      };-->
 
-      self.registration.showNotification(notificationTitle,
-        notificationOptions);
-    });
-  </script>
+<!--      self.registration.showNotification(notificationTitle,-->
+<!--        notificationOptions);-->
+<!--    });-->
+<!--  </script>-->
 </body>
 </html>
